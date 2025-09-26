@@ -59,28 +59,50 @@ int main(){
          // acima verifica quantas bombas o campo minado vai ter, caso as bombas ultrapassem a variável "tamanho", ele reinicia o código.
       }  
          printf("\nCampo:\n");
+         char visivel[tamanho][tamanho];
+         for (int i = 0; i < tamanho; i++) {
+            for (int j = 0; j < tamanho; j++) {
+               visivel[i][j] = '0'; 
+            }
+         }
          for(int i = 0; i < tamanho;i++){
             for(int j = 0; j < tamanho; j++){
-               printf("0 "); 
+            printf("%c ", visivel[i][j]);            
             }
          printf("\n");
-      } 
+         } 
+      while(ganhou == 0){   
          printf("Escolha uma posicao: ");
          scanf("%d %d", &linha, &coluna);
+         if (linha < 0 || coluna < 0 || linha >= tamanho || coluna >= tamanho) {
+            printf("posicao invalida");
+         }
+         system("cls");
+         for(int i = 0; i < tamanho;i++){
+            for(int j = 0; j < tamanho; j++){
+               visivel[linha][coluna] = ' ';               
+            }
+         }
+         for(int i = 0; i < tamanho; i++){
+            for(int j = 0; j < tamanho; j++){
+               printf("%c ", visivel[i][j]);
+            }
+         printf("\n");
+         }
          if(mat[linha][coluna] == 0){
-            mat[linha][coluna] == " ";
+            mat[linha][coluna] = 1;
          }
          else if(mat[linha][coluna] == -1){
             ganhou = -1;
          }
-      if(ganhou == 1){
-         system("cls");
-         printf("Voce GANHOU!!!");
+         if(ganhou == 1){
+            system("cls");
+            printf("Voce GANHOU!!!");
+         }
+         else if(ganhou == -1){
+            system("cls");
+            printf("Voce PERDEU!!!");
+         }
       }
-      else if(ganhou == -1){
-         system("cls");
-         printf("Voce PERDEU!!!");
-      }
-   break;
    }
 }
