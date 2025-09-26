@@ -2,107 +2,131 @@
 #include <stdlib.h>
 
 int main(){
-   int ganhou = 0;
-   while(ganhou == 0){
-      int tamanho, bombas, linha, coluna;
-      //variaveis declaradas dentro do while pois quando o codigo der um continue, ele resetar tudo que foi feito.
-      system("cls");
-      printf("Escreva o tamanho do campo min 5x5 max 100x100: ");
-      scanf("%d", &tamanho);
-      if(tamanho<5 || tamanho>100){
-         system("cls");
-         printf("O tamanho e invalido!\n");
-         continue;
-      }
-      else{
-         system("cls");
-      }
-      //acima verifica se o tamanho da matriz é menor que 5 ou maior que 100, caso estiver correto ele reinicia o codigo.
+    int ganhou = 0, reveladas = 0;
+    
+    while(ganhou == 0){
+        int tamanho, bombas, linha, coluna;
+        system("cls");
+        printf("Escreva o tamanho do campo (min 5x5 max 100x100): ");
+        scanf("%d", &tamanho);
+        system("cls");
+        if(tamanho < 5 || tamanho > 100){
+            printf("O tamanho e invalido!\n");
+            continue;
+        }
 
-      int mat[tamanho][tamanho];
-      for(int i = 0; i < tamanho; i++){
-         for(int j = 0; j < tamanho; j++){
-         mat[i][j] = 0;  
-         }
-      }
-      // O For acima define todas as posições como vazias
-      printf("Quantas bombas vai ter? ");
-      scanf("%d",&bombas);
+        int mat[tamanho][tamanho];
+        char visivel[tamanho][tamanho];
 
-      if(bombas> tamanho*tamanho || bombas == 0){
-         system("cls");
-         printf("A quantidade de bombas e invalida!\n");
-         continue;
-      }
-      //este if verifica o tamanho total da matriz, para não ter mais bombas que espaços vazios e se não tem bombas.
-      system("cls");
-      for(int i = 0; i < bombas ; i++){
-         printf("Digite a posicao das bombas: ");
-         scanf("%d %d", &linha, &coluna);
-      
-         if(linha < 0 || coluna < 0 || linha>=tamanho || coluna>=tamanho){
+        // inicializa os campos
+        for(int i = 0; i < tamanho; i++){
+            for(int j = 0; j < tamanho; j++){
+                mat[i][j] = 0;
+                visivel[i][j] = '0'; // '0' = escondido
+            }
+        }
+
+        printf("Quantas bombas vai ter? ");
+        scanf("%d", &bombas);
+        
+
+        if(bombas > tamanho * tamanho || bombas == 0){
+            printf("A quantidade de bombas e invalida!\n");
+            continue;
+        }
+
+        // posiciona bombas
+        for(int i = 0; i < bombas ; i++){
             system("cls");
-            printf("A posicao e ivalida!\n");
-            i--;
-         }
-         else if(mat[linha][coluna] == -1){
+            printf("Digite a posicao da bomba %d (linha coluna): ",i+1);
+            scanf("%d %d", &linha, &coluna);
             system("cls");
-            printf("ja existe uma bomba nesse local!\n");
-            i--;
+
+            // Se você prefere que o usuário digite 1..tamanho, descomente as duas linhas seguintes:
+            // linha--; coluna--;
+
+            if(linha < 0 || coluna < 0 || linha >= tamanho || coluna >= tamanho){
+                printf("Posicao invalida!\n");
+                i--;
+                continue;
+            }
+            if(mat[linha][coluna] == -1){
+                printf("Ja existe bomba nesse local!\n");
+                i--;
+            } else {
+                mat[linha][coluna] = -1;
+                printf("Bomba %d posicionada em (%d, %d). Pressione Enter para continar!\n", i+1, linha, coluna);
+                while(getchar() != '\n'); 
+                getchar();
+                system("cls");                
+            }
+        }
+
+        
+        while(ganhou == 0){ //loop, em que o jogo realmente começa
+            int seguras = tamanho * tamanho - bombas;
+         
+            for(int i = 0; i < tamanho; i++){ // mostra o campo que o usuario consegue ver no terminal
+                for(int j = 0; j < tamanho; j++){
+                    printf("%c ", visivel[i][j]);
+                }
+                printf("\n");
+            }
+
+            printf("Escolha uma posicao (linha coluna): "); // Efetua a jogada guardando linha e coluna como os dados da jogada
+            scanf("%d %d", &linha, &coluna);
+            // verifica se a posição da linha e coluna sao maior que o tamanho da matriz, e se essa mesma posiçao é menor q 0
+            if (linha < 0 || coluna < 0 || linha >= tamanho || coluna >= tamanho) {
+                printf("Posicao invalida! Pressione Enter para continuar.\n");
+                while(getchar() != '\n');
+                getchar();
+                system("cls");
+                continue;
+            }
+            if(mat[linha][coluna] == -1){ // verifica a escolha do usuario, pega o mesmo indice e aplica na matriz dentro da memoria, se for -1, perde!
+                ganhou = -1; 
+                system("cls");
+                printf("Voce PERDEU!!!\n");
+                break;
+            }
             
-         }
-         else{
-            mat[linha][coluna] = -1;
+            
+            if(mat[linha][coluna] == 0){
+                //verifica se a posição jogada ja foi escolhida, para confirmar a quantidade de reveladas, e verificar se o usuario não selecionou a mesma casa muitas vezes, evitando ganhar por escolher a mesma casa varias vezes.
+                reveladas +=1;
+                if(reveladas == seguras){ 
+                    ganhou = 1;
+                    system("cls");
+                    printf("Voce GANHOU!!!!!!\n");
+                    //Consiste em ver quantas vezes foram efetuada as tentativas, apos a validaçao da posição e apos isso verifica se a quantidade de posiçoes são a mesma quantidade da variavel "Segura".
+                    }
+            }
+            if(mat[linha][coluna] == 0){
+                mat[linha][coluna] = 1;
+            }
+            
+      
+            // conta quantas bombas tem ao redor (porém NÃO printa essa quantidade)
+            int cont = 0;
+            for (int di = -1; di <= 1; di++) {
+                for (int dj = -1; dj <= 1; dj++) {
+                    if (di == 0 && dj == 0) continue;
+                    int ni = linha + di;
+                    int nj = coluna + dj;
+                    if (ni >= 0 && ni < tamanho && nj >= 0 && nj < tamanho) {
+                        if (mat[ni][nj] == -1) cont++;
+                    }
+                }
+            }
+    
+            printf("Existem %d bomba(s) ao redor. Pressione Enter para continuar!\n", cont);
+            while(getchar() != '\n'); 
+                getchar(); // espera o Enter do usuário para prosseguir com o jogo.
+            visivel[linha][coluna] = 'X'; // faz o local que o usuario inseriu exibir o "X".
             system("cls");
-            printf("Bomba %d posicionada em (%d, %d)\n", i+1, linha, coluna);
-         }
-         // acima verifica quantas bombas o campo minado vai ter, caso as bombas ultrapassem a variável "tamanho", ele reinicia o código.
-      }  
-         printf("\nCampo:\n");
-         char visivel[tamanho][tamanho];
-         for (int i = 0; i < tamanho; i++) {
-            for (int j = 0; j < tamanho; j++) {
-               visivel[i][j] = '0'; 
-            }
-         }
-         for(int i = 0; i < tamanho;i++){
-            for(int j = 0; j < tamanho; j++){
-            printf("%c ", visivel[i][j]);            
-            }
-         printf("\n");
-         } 
-      while(ganhou == 0){   
-         printf("Escolha uma posicao: ");
-         scanf("%d %d", &linha, &coluna);
-         if (linha < 0 || coluna < 0 || linha >= tamanho || coluna >= tamanho) {
-            printf("posicao invalida");
-         }
-         system("cls");
-         for(int i = 0; i < tamanho;i++){
-            for(int j = 0; j < tamanho; j++){
-               visivel[linha][coluna] = ' ';               
-            }
-         }
-         for(int i = 0; i < tamanho; i++){
-            for(int j = 0; j < tamanho; j++){
-               printf("%c ", visivel[i][j]);
-            }
-         printf("\n");
-         }
-         if(mat[linha][coluna] == 0){
-            mat[linha][coluna] = 1;
-         }
-         else if(mat[linha][coluna] == -1){
-            ganhou = -1;
-         }
-         if(ganhou == 1){
-            system("cls");
-            printf("Voce GANHOU!!!");
-         }
-         else if(ganhou == -1){
-            system("cls");
-            printf("Voce PERDEU!!!");
-         }
-      }
-   }
-}
+         
+        } // fim loop do jogo.
+        
+    } // fim while principal.
+    return 0;
+} // fim do main.
